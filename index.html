@@ -985,14 +985,8 @@ ${msg}`
   const mailtoLink =
     `mailto:johnjoseph9388180@gmail.com?subject=${subject}&body=${body}`;
 
-  // Create a real mailto link
-  const link = document.createElement('a');
-  link.href = mailtoLink;
-  link.style.display = 'none';
-
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  // Open the email client
+  window.location.href = mailtoLink;
 });
 </script>
 
