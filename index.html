@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -139,22 +140,36 @@
     transition:border-color .25s;
   }  .work-card:hover{border-color:var(--border);}
   .work-card.tall{min-height:280px;}
-  .work-card.has-video{background-size:cover;background-position:center;}
-  .work-card.has-video::before{
-    content:'';position:absolute;inset:0;
-    background:linear-gradient(0deg,rgba(0,0,0,0.85) 10%,rgba(0,0,0,0.15) 55%,rgba(0,0,0,0.45) 100%);
-    z-index:1;
-  }
+  .work-card.has-video{border-color:rgba(63,224,138,0.25);}
+  .work-card.has-video:hover{border-color:var(--accent);}
   .work-card .work-meta,.work-card .work-title,.work-card .work-placeholder-icon{position:relative;z-index:2;}
-  .play-btn{
-    position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-    width:56px;height:56px;border-radius:50%;
-    background:rgba(255,255,255,0.92);display:flex;align-items:center;justify-content:center;
-    z-index:2;transition:transform .25s, background .25s;
-  }
-  .work-card:hover .play-btn{transform:translate(-50%,-50%) scale(1.1);background:var(--accent);}
-  .play-btn svg{margin-left:3px;}
+  .work-card.has-video .work-placeholder-icon{opacity:0.9;transition:transform .25s;}
+  .work-card.has-video:hover .work-placeholder-icon{transform:scale(1.12);}
   .video-embed-frame{position:absolute;inset:0;width:100%;height:100%;border:0;z-index:3;}
+
+  /* ---------- Video Lightbox ---------- */
+  .lightbox{
+    position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.92);
+    display:flex;align-items:center;justify-content:center;padding:24px;
+    opacity:0;pointer-events:none;transition:opacity .25s ease;
+  }
+  .lightbox.open{opacity:1;pointer-events:auto;}
+  .lightbox-inner{width:100%;max-width:960px;aspect-ratio:16/9;position:relative;}
+  .lightbox-inner iframe{width:100%;height:100%;border:0;}
+  .lightbox-close{
+    position:absolute;top:-44px;right:0;background:none;border:none;color:var(--text);
+    font-size:14px;letter-spacing:2px;cursor:pointer;display:flex;align-items:center;gap:8px;
+  }
+  .lightbox-close:hover{color:var(--accent);}
+
+  /* ---------- Load more ---------- */
+  .load-more-wrap{display:flex;justify-content:center;margin-top:36px;}
+  .load-more-btn{
+    border:1px solid var(--border);background:none;color:var(--text);
+    padding:14px 32px;font-size:12px;letter-spacing:2px;cursor:pointer;
+    font-family:var(--font-body);transition:border-color .2s, background .2s;
+  }
+  .load-more-btn:hover{border-color:var(--accent);background:var(--accent-dim);color:var(--accent);}
   .work-placeholder-icon{
     position:absolute;top:20px;right:20px;opacity:0.18;
   }
@@ -484,8 +499,18 @@
     <div class="work-grid reveal-stagger" id="workGrid">
       <!-- populated by JS -->
     </div>
+    <div class="load-more-wrap" id="loadMoreWrap" style="display:none;">
+      <button class="load-more-btn" id="loadMoreBtn">LOAD MORE →</button>
+    </div>
   </div>
 </section>
+
+<div class="lightbox" id="videoLightbox">
+  <div class="lightbox-inner">
+    <button class="lightbox-close" id="lightboxClose">CLOSE ✕</button>
+    <div id="lightboxFrameHolder"></div>
+  </div>
+</div>
 
 <!-- ABOUT -->
 <section id="about">
@@ -710,7 +735,7 @@
         <div class="contact-info">
           <div>
             <div class="info-label">EMAIL</div>
-            <div class="info-value"><a href="mailto:doublejisactive@gmail.com">doublejisactive@gmail.com</a></div>
+            <div class="info-value"><a href="mailto:johnjosephchibuikem98@gmail.com">johnjosephchibuikem98@gmail.com</a></div>
           </div>
           <div>
             <div class="info-label">LOCATION</div>
@@ -757,7 +782,7 @@
           <textarea id="fmsg" placeholder="Tell me about your project, footage, goals..." required></textarea>
         </div>
         <button type="submit" class="submit-btn">SEND PROJECT &nbsp;→</button>
-        <p class="form-note">Opens your email app with the details pre-filled, sent to doublejisactive@gmail.com.</p>
+        <p class="form-note">Opens your email app with the details pre-filled, sent to johnjosephchibuikem98@gmail.com.</p>
       </form>
     </div>
   </div>
@@ -819,36 +844,69 @@
   // Portfolio data
   const projects = [
     {title:'Brand Story Reel', cat:'cinematic', catLabel:'CINEMATIC', year:'2025', tall:true, video:'ANFw3voOBCA'},
+    {title:'Cinematic Highlight Reel', cat:'cinematic', catLabel:'CINEMATIC', year:'2024', video:'8gPtX8QWoYA'},
+
     {title:'YouTube Documentary', cat:'youtube', catLabel:'YOUTUBE', year:'2025'},
-    {title:'Viral Short-Form Series', cat:'short-form', catLabel:'SHORT-FORM', year:'2025', tall:true},
-    {title:'Motion Graphics Package', cat:'motion-graphics', catLabel:'MOTION GRAPHICS', year:'2025'},
     {title:'Commercial Ad Cut', cat:'ads', catLabel:'ADS', year:'2024', tall:true},
     {title:'Social Media Content Pack', cat:'social-media', catLabel:'SOCIAL MEDIA', year:'2024'},
-    {title:'Cinematic Highlight Reel', cat:'cinematic', catLabel:'CINEMATIC', year:'2024', video:'8gPtX8QWoYA'},
-    {title:'Podcast Video Series', cat:'long-form', catLabel:'LONG-FORM', year:'2024', tall:true},
+
+    // Short-Form
+    {title:'Gaming Highlights — Sample 01', cat:'short-form', catLabel:'SHORT-FORM', year:'2025', tall:true, video:'fMGLbqWPZFY'},
+    {title:'Gaming Highlights — Sample 02', cat:'short-form', catLabel:'SHORT-FORM', year:'2025', video:'39MoC7qcPY8'},
+    {title:'Cyberpunk Beat Sync — Sample 01', cat:'short-form', catLabel:'SHORT-FORM', year:'2025', video:'qzPpM9UtRVw'},
+    {title:'Cyberpunk Beat Sync — Sample 02', cat:'short-form', catLabel:'SHORT-FORM', year:'2025', tall:true, video:'iFD14AdpvKg'},
+
+    // Motion Graphics
+    {title:'Circle Loop Animation', cat:'motion-graphics', catLabel:'MOTION GRAPHICS', year:'2025', video:'r6sLQrtdHvQ'},
+    {title:'Kinetic Lower Thirds — Project 01', cat:'motion-graphics', catLabel:'MOTION GRAPHICS', year:'2025', tall:true, video:'j5h8-FE6Ux0'},
+    {title:'Kinetic Lower Thirds — Project 02', cat:'motion-graphics', catLabel:'MOTION GRAPHICS', year:'2025', video:'0I8XJhln_7I'},
+
+    // Long-Form
+    {title:'Movie & History Recap', cat:'long-form', catLabel:'LONG-FORM', year:'2024', tall:true, video:'WZNfypN-mD8'},
+    {title:'Sheldon — Tax Code Combat', cat:'long-form', catLabel:'LONG-FORM', year:'2024', video:'OpqHhLT97fM'},
+    {title:'Battle Cuts — Recap Edit', cat:'long-form', catLabel:'LONG-FORM', year:'2024', video:'P4jErbiMzsA'},
+    {title:'Tech Essay — Commentary 01', cat:'long-form', catLabel:'LONG-FORM', year:'2024', tall:true, video:'hPHfruxZ-nA'},
+    {title:'Tech Essay — Commentary 02', cat:'long-form', catLabel:'LONG-FORM', year:'2024', video:'sag4pGeGK00'},
+    {title:'Lifestyle Vlog 01', cat:'long-form', catLabel:'LONG-FORM', year:'2024', video:'VA-Z3uCKnEU'},
+    {title:'Lifestyle Vlog 02', cat:'long-form', catLabel:'LONG-FORM', year:'2024', video:'VOYecDodxGo'},
   ];
 
   const grid = document.getElementById('workGrid');
-  function renderGrid(filter){
-    grid.innerHTML = '';
-    projects.filter(p => filter==='all' || p.cat===filter).forEach(p => {
-      const card = document.createElement('div');
-      card.className = 'work-card reveal' + (p.tall ? ' tall' : '') + (p.video ? ' has-video' : '');
+  const loadMoreWrap = document.getElementById('loadMoreWrap');
+  const loadMoreBtn = document.getElementById('loadMoreBtn');
+  const PAGE_SIZE = 6;
+  let currentFilter = 'all';
+  let visibleCount = PAGE_SIZE;
 
-      if(p.video){
-        card.innerHTML = `<iframe class="video-embed-frame" src="https://www.youtube.com/embed/${p.video}" title="${p.title}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>`;
-      } else {
-        card.innerHTML = `
-          <svg class="work-placeholder-icon" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.3">
-            <polygon points="5 3 19 12 5 21 5 3"/>
-          </svg>
-          <div class="work-meta">${p.catLabel} • ${p.year}</div>
-          <div class="work-title">${p.title}</div>
-        `;
-      }
-      grid.appendChild(card);
-    });
-    // reveal the freshly rendered cards
+  function buildCard(p){
+    const card = document.createElement('div');
+    card.className = 'work-card reveal' + (p.tall ? ' tall' : '') + (p.video ? ' has-video' : '');
+    card.innerHTML = `
+      <svg class="work-placeholder-icon" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.3">
+        ${p.video ? '<circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16" fill="#fff" stroke="none"/>' : '<polygon points="5 3 19 12 5 21 5 3"/>'}
+      </svg>
+      <div class="work-meta">${p.catLabel} • ${p.year}</div>
+      <div class="work-title">${p.title}</div>
+    `;
+    if(p.video){
+      card.addEventListener('click', () => openLightbox(p.video, p.title));
+    }
+    return card;
+  }
+
+  function renderGrid(filter){
+    currentFilter = filter;
+    visibleCount = PAGE_SIZE;
+    paintGrid();
+  }
+
+  function paintGrid(){
+    grid.innerHTML = '';
+    const items = projects.filter(p => currentFilter==='all' || p.cat===currentFilter);
+    items.slice(0, visibleCount).forEach(p => grid.appendChild(buildCard(p)));
+
+    loadMoreWrap.style.display = items.length > visibleCount ? 'flex' : 'none';
+
     requestAnimationFrame(() => {
       grid.querySelectorAll('.work-card').forEach((el,i) => {
         setTimeout(() => el.classList.add('revealed'), i*45);
@@ -856,6 +914,11 @@
     });
   }
   renderGrid('all');
+
+  loadMoreBtn.addEventListener('click', () => {
+    visibleCount += PAGE_SIZE;
+    paintGrid();
+  });
 
   document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -868,6 +931,23 @@
       }, 200);
     });
   });
+
+  // ---- Video Lightbox ----
+  const lightbox = document.getElementById('videoLightbox');
+  const lightboxFrameHolder = document.getElementById('lightboxFrameHolder');
+  function openLightbox(videoId, title){
+    lightboxFrameHolder.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1" title="${title}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>`;
+    lightbox.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeLightbox(){
+    lightbox.classList.remove('open');
+    lightboxFrameHolder.innerHTML = '';
+    document.body.style.overflow = '';
+  }
+  document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
+  lightbox.addEventListener('click', (e) => { if(e.target === lightbox) closeLightbox(); });
+  window.addEventListener('keydown', (e) => { if(e.key === 'Escape') closeLightbox(); });
 
   // ---- Scroll-triggered reveal animations ----
   const revealEls = document.querySelectorAll('.reveal');
@@ -931,7 +1011,7 @@
     const body = encodeURIComponent(
       `Name: ${name}\nEmail: ${email}\nProject Type: ${type || 'Not specified'}\nBudget Range: ${budget || 'Not specified'}\n\nMessage:\n${msg}`
     );
-    window.location.href = `mailto:doublejisactive@gmail.com?subject=${subject}&body=${body}`;
+    window.location.href = `mailto:johnjosephchibuikem98@gmail.com?subject=${subject}&body=${body}`;
   });
 </script>
 
