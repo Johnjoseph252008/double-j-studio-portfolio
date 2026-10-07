@@ -721,7 +721,7 @@
         </div>
       </div>
 
-      <form id="projectForm" class="reveal">
+      <form id="projectForm" class="reveal" action="https://formspree.io/f/xwlvkdna" method="POST">
         <div class="field">
           <label for="fname">NAME</label>
           <input type="text" id="fname" placeholder="Your name" required>
@@ -759,7 +759,7 @@
           <textarea id="fmsg" placeholder="Tell me about your project, footage, goals..." required></textarea>
         </div>
         <button type="submit" class="submit-btn">SEND PROJECT &nbsp;→</button>
-        <p class="form-note">Opens your email app with the details pre-filled, sent to johnjoseph9388180@gmail.com.</p>
+        <p class="form-note" id="formStatus">Your message goes straight to my inbox. I'll reply within 24 hours.</p>
       </form>
     </div>
   </div>
@@ -962,36 +962,54 @@
   window.addEventListener('touchmove', e => { if(dragging) setSlider(pctFromEvent(e)); }, {passive:true});
   sliderBox.addEventListener('click', e => { if(e.target===handle||e.target.closest('.handle-knob')) return; setSlider(pctFromEvent(e)); });
 
-// Contact form -> mailto
-document.getElementById('projectForm').addEventListener('submit', function(e) {
+// Contact form -> Formspree
+const projectForm = document.getElementById('projectForm');
+const formStatus = document.getElementById('formStatus');
+const submitBtn = projectForm.querySelector('.submit-btn');
+
+projectForm.addEventListener('submit', async function (e) {
   e.preventDefault();
 
   const name = document.getElementById('fname').value.trim();
-  const email = document.getElementById('femail').value.trim();
-  const type = document.getElementById('ftype').value;
-  const budget = document.getElementById('fbudget').value;
-  const msg = document.getElementById('fmsg').value.trim();
+  const defaultLabel = submitBtn.innerHTML;
 
-  const subject = encodeURIComponent(`New project inquiry from ${name}`);
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'SENDING...';
+  formStatus.textContent = '';
 
-  const body = encodeURIComponent(
-    `Name: ${name}
-Email: ${email}
-Project Type: ${type || 'Not specified'}
-Budget Range: ${budget || 'Not specified'}
+  const payload = {
+    name: name,
+    email: document.getElementById('femail').value.trim(),
+    project_type: document.getElementById('ftype').value || 'Not specified',
+    budget_range: document.getElementById('fbudget').value || 'Not specified',
+    message: document.getElementById('fmsg').value.trim(),
+    _subject: `New project inquiry from ${name}`
+  };
 
-Message:
-${msg}`
-  );
+  try {
+    const res = await fetch('https://formspree.io/f/xwlvkdna', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
 
-const mailtoLink = `mailto:johnjoseph9388180@gmail.com?subject=${subject}&body=${body}`;
-
-  // Create a temporary anchor element to trigger the mail client safely
-  const tempLink = document.createElement('a');
-  tempLink.href = mailtoLink;
-  document.body.appendChild(tempLink);
-  tempLink.click();
-  document.body.removeChild(tempLink);
+    if (res.ok) {
+      projectForm.reset();
+      formStatus.textContent = "Thanks! Your project details are in. I'll be in touch soon.";
+    } else {
+      const data = await res.json().catch(() => ({}));
+      formStatus.textContent = (data.errors && data.errors.map(err => err.message).join(', '))
+        || 'Something went wrong. Please try again or email me directly.';
+    }
+  } catch (err) {
+    formStatus.textContent = 'Network error. Please check your connection and try again.';
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = defaultLabel;
+  }
 });
 </script>
 
