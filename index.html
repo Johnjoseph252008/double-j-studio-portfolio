@@ -4,6 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Double J Studio — Video Editor</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%AC%3C/text%3E%3C/svg%3E">
+<meta name="description" content="Double J Studio — video editing, motion graphics, color grading and visual storytelling for creators, brands and businesses. Based in Nigeria, working worldwide.">
+<meta property="og:title" content="Double J Studio — Video Editor & Visual Storyteller">
+<meta property="og:description" content="I turn raw footage into videos people want to watch. Portfolio, services and pricing for video editing, short-form content, motion graphics and more.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Double J Studio — Video Editor & Visual Storyteller">
+<meta name="twitter:description" content="I turn raw footage into videos people want to watch.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -91,8 +99,13 @@
     position:relative;margin-bottom:28px;
   }
   .hero-title .ghost{
-    color:transparent;
-    -webkit-text-stroke:1px var(--ghost);
+    color:var(--ghost);
+  }
+  @supports (-webkit-text-stroke: 1px black){
+    .hero-title .ghost{
+      color:transparent;
+      -webkit-text-stroke:1px var(--ghost);
+    }
   }
   .hero-lede{font-size:19px;color:var(--text-dim);max-width:440px;margin-bottom:36px;}
   .hero-actions{display:flex;flex-direction:column;gap:16px;align-items:flex-start;max-width:420px;}
@@ -228,6 +241,19 @@
   .slider-raw{background:linear-gradient(160deg,#1c1c1c,#0a0a0a);color:var(--text-faint);}
   .slider-final{background:linear-gradient(160deg,#16241c,#0a0a0a);color:var(--accent);}
   .slider-final-wrap{position:absolute;inset:0;overflow:hidden;}
+  .slider-box.has-video{aspect-ratio:16/9;background:#000;}
+  .slider-video{position:absolute;inset:0;width:100%;height:100%;border:0;pointer-events:none;}
+  .slider-controls{
+    position:absolute;left:16px;bottom:16px;z-index:5;display:none;gap:8px;
+  }
+  .slider-box.has-video .slider-controls{display:flex;}
+  .slider-ctrl{
+    background:var(--bg);color:var(--text);border:1px solid var(--border);
+    padding:10px 16px;font-size:11px;letter-spacing:2px;cursor:pointer;
+    font-family:var(--font-body);transition:border-color .2s,color .2s;
+  }
+  .slider-ctrl:hover{border-color:var(--accent);color:var(--accent);}
+  .slider-note{font-size:12px;color:var(--text-faint);margin-top:12px;}
   .slider-tag{
     position:absolute;top:16px;font-size:11px;letter-spacing:2px;
     border:1px solid currentColor;padding:6px 12px;
@@ -251,7 +277,14 @@
     font-family:var(--font-display);font-weight:900;
     font-size:clamp(30px,6vw,54px);line-height:1.08;letter-spacing:-0.5px;
   }
-  .quote-big .line2{color:transparent;-webkit-text-stroke:1px var(--ghost);}
+  .quote-big .line2{color:var(--ghost);}
+  @supports (-webkit-text-stroke: 1px black){
+    .quote-big .line2{color:transparent;-webkit-text-stroke:1px var(--ghost);}
+  }
+  .ghost-text{color:var(--ghost);}
+  @supports (-webkit-text-stroke: 1px black){
+    .ghost-text{color:transparent;-webkit-text-stroke:1px var(--ghost);}
+  }
   .quote-full{color:var(--text-dim);font-size:18px;max-width:56ch;margin-top:32px;line-height:1.7;}
   .quote-attr{margin-top:20px;font-size:12px;letter-spacing:2px;color:var(--text-faint);}
 
@@ -502,7 +535,7 @@
       </div>
       <div class="about-copy reveal">
         <div class="eyebrow">BEHIND THE CUTS</div>
-        <h2 class="h2" style="margin-bottom:28px;">The studio<br><span style="color:transparent;-webkit-text-stroke:1px var(--ghost);">behind the work</span></h2>
+        <h2 class="h2" style="margin-bottom:28px;">The studio<br><span class="ghost-text">behind the work</span></h2>
         <div class="eyebrow" style="margin-top:12px;">THE STUDIO</div>
         <p style="font-family:var(--font-display);font-weight:900;font-size:28px;line-height:1.15;margin-bottom:24px;">I edit stories, not just footage.</p>
         <p>Double J Studio helps creators, brands and businesses turn raw footage into polished, engaging visual stories.</p>
@@ -678,16 +711,21 @@
       <h2 class="h2 reveal" style="font-size:clamp(28px,5vw,42px);">Raw → Final</h2>
       <p class="reveal" style="color:var(--text-dim);max-width:46ch;margin:14px 0 28px;">Drag the slider to see the difference between raw footage and a finished edit.</p>
       <div class="slider-box reveal" id="sliderBox">
-        <div class="slider-side slider-raw">RAW FOOTAGE</div>
+        <div class="slider-side slider-raw" id="rawLayer">RAW FOOTAGE</div>
         <div class="slider-final-wrap" id="finalWrap">
-          <div class="slider-side slider-final" style="width:100vw;max-width:1180px;">FINAL EDIT</div>
+          <div class="slider-side slider-final" id="finalLayer" style="width:100vw;max-width:1180px;">FINAL EDIT</div>
         </div>
         <div class="slider-tag tag-raw">RAW</div>
         <div class="slider-tag tag-final">FINAL</div>
         <div class="slider-handle" id="sliderHandle">
           <div class="handle-knob">⇔</div>
         </div>
+        <div class="slider-controls" id="sliderControls">
+          <button type="button" class="slider-ctrl" id="sliderPlay">▶ PLAY BOTH</button>
+          <button type="button" class="slider-ctrl" id="sliderRestart">↺ RESTART</button>
+        </div>
       </div>
+      <p class="slider-note" id="sliderNote" style="display:none;">Press play, then drag the handle to compare raw and final side by side. Final plays with sound.</p>
     </div>
   </div>
 </section>
@@ -707,7 +745,7 @@
     <div class="contact-grid">
       <div class="reveal">
         <div class="eyebrow">GET IN TOUCH</div>
-        <h2 class="h2">Let's work<br><span style="color:transparent;-webkit-text-stroke:1px var(--ghost);">together.</span></h2>
+        <h2 class="h2">Let's work<br><span class="ghost-text">together.</span></h2>
         <p class="contact-lede">Have a project in mind? Send the brief, footage or idea. Let's build something worth watching.</p>
         <div class="contact-info">
           <div>
@@ -960,7 +998,71 @@
   window.addEventListener('touchend', () => dragging = false);
   window.addEventListener('mousemove', e => { if(dragging) setSlider(pctFromEvent(e)); });
   window.addEventListener('touchmove', e => { if(dragging) setSlider(pctFromEvent(e)); }, {passive:true});
-  sliderBox.addEventListener('click', e => { if(e.target===handle||e.target.closest('.handle-knob')) return; setSlider(pctFromEvent(e)); });
+  sliderBox.addEventListener('click', e => {
+    if(e.target===handle || e.target.closest('.handle-knob') || e.target.closest('.slider-controls')) return;
+    setSlider(pctFromEvent(e));
+  });
+
+  // ===== Raw -> Final slider videos =====
+
+  const SLIDER_RAW_ID   = '';
+  const SLIDER_FINAL_ID = '';
+
+  if(SLIDER_RAW_ID && SLIDER_FINAL_ID){
+    const rawLayer = document.getElementById('rawLayer');
+    const finalLayer = document.getElementById('finalLayer');
+    const playBtn = document.getElementById('sliderPlay');
+    const restartBtn = document.getElementById('sliderRestart');
+
+    function ytSrc(id, muted){
+      const p = new URLSearchParams({
+        enablejsapi:'1', controls:'0', rel:'0', modestbranding:'1',
+        playsinline:'1', disablekb:'1', iv_load_policy:'3', loop:'1', playlist:id
+      });
+      if(muted) p.set('mute','1');
+      if(location.protocol.indexOf('http') === 0) p.set('origin', location.origin);
+      return 'https://www.youtube.com/embed/' + id + '?' + p.toString();
+    }
+    function makeFrame(id, muted, title){
+      const f = document.createElement('iframe');
+      f.className = 'slider-video';
+      f.src = ytSrc(id, muted);
+      f.title = title;
+      f.allow = 'autoplay; encrypted-media; picture-in-picture';
+      f.referrerPolicy = 'strict-origin-when-cross-origin';
+      f.setAttribute('frameborder','0');
+      return f;
+    }
+    function ytCmd(frame, func, args){
+      if(frame && frame.contentWindow){
+        frame.contentWindow.postMessage(JSON.stringify({event:'command', func:func, args:args||[]}), '*');
+      }
+    }
+
+    const rawFrame = makeFrame(SLIDER_RAW_ID, true, 'Raw footage');
+    const finalFrame = makeFrame(SLIDER_FINAL_ID, false, 'Final edit');
+
+    sliderBox.classList.add('has-video');
+    rawLayer.textContent = '';
+    finalLayer.textContent = '';
+    finalLayer.style.width = '100%';
+    finalLayer.style.maxWidth = 'none';
+    rawLayer.appendChild(rawFrame);
+    finalLayer.appendChild(finalFrame);
+    document.getElementById('sliderNote').style.display = 'block';
+
+    let playing = false;
+    function setPlaying(state){
+      playing = state;
+      [rawFrame, finalFrame].forEach(f => ytCmd(f, playing ? 'playVideo' : 'pauseVideo'));
+      playBtn.textContent = playing ? '❚❚ PAUSE' : '▶ PLAY BOTH';
+    }
+    playBtn.addEventListener('click', () => setPlaying(!playing));
+    restartBtn.addEventListener('click', () => {
+      [rawFrame, finalFrame].forEach(f => ytCmd(f, 'seekTo', [0, true]));
+      setPlaying(true);
+    });
+  }
 
 // Contact form -> Formspree
 const projectForm = document.getElementById('projectForm');
