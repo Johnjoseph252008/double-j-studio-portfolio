@@ -58,12 +58,11 @@
     padding:18px 24px;max-width:1180px;margin:0 auto;
   }
   .brand{display:flex;align-items:center;gap:14px;}
-  .brand-mark{
-    width:44px;height:44px;border:1.5px solid var(--text);
-    display:flex;align-items:center;justify-content:center;
-    font-family:var(--font-display);font-weight:900;font-size:15px;
-    letter-spacing:0.5px;flex-shrink:0;
-  }
+      .brand-logo{height:40px;width:auto;flex-shrink:0;}
+  .brand-logo.for-light{display:none;}
+  :root[data-theme="light"] .brand-logo.for-dark{display:none;}
+  :root[data-theme="light"] .brand-logo.for-light{display:block;}
+
   .brand-name{font-family:var(--font-display);font-weight:900;font-size:16px;letter-spacing:0.5px;line-height:1.15;}
   .brand-sub{font-size:11px;letter-spacing:3px;color:var(--text-dim);}
   nav.desktop-nav{display:flex;gap:36px;}
@@ -455,7 +454,7 @@
 <header>
   <div class="header-inner">
     <a href="#top" class="brand">
-      <div class="brand-mark">JJ</div>
+      <img class="brand-logo" src="logo.png" alt="Double J Studio logo">
       <div>
         <div class="brand-name">DOUBLE J</div>
         <div class="brand-sub">STUDIO</div>
@@ -848,6 +847,17 @@
 </footer>
 
 <script>
+  //Toogle
+  try{var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}
+
+    // Theme toggle
+  document.getElementById('themeToggle').addEventListener('click', () => {
+    const root = document.documentElement;
+    const next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('theme', next); } catch (e) {}
+  });
+  
   // Mobile menu
   const menuBtn = document.getElementById('menuBtn');
   const mobileNav = document.getElementById('mobileNav');
